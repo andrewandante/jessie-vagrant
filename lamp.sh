@@ -23,7 +23,7 @@ if [ ! -e /usr/local/bin/sspak ]; then
 fi
 
 # Get composer
-if [! -e /usr/bin/composer ]; then
+if [ ! -e /usr/bin/composer ]; then
 	php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 	php -r "if (hash_file('SHA384', 'composer-setup.php') === '$(curl -q https://composer.github.io/installer.sig)') { echo 'Installer verified' . PHP_EOL; } else { echo 'Installer corrupt' . PHP_EOL; unlink('composer-setup.php'); exit(1); }"
 	if [ $? != 0 ]; then
@@ -47,7 +47,10 @@ then
     zend_extension=\"/usr/lib/php5/20131226/xdebug.so\"
     xdebug.profiler_enable = 1
     xdebug.profiler_enable_trigger = 1
+    xdebug.profiler_append = 1
+    xdebug.profiler_output_dir=\"/tmp/xdebug_profiler/\"
+    xdebug.profiler_output_name=\"%H_%R_%p_cachegrind.out\"
     xdebug.remote_connect_back = 1
     xdebug.remote_enable = 1
-	xdebug.remote_port = 2200" > /etc/php5/apache2/conf.d/20-xdebug.ini
+    xdebug.remote_port = 2200" > /etc/php5/apache2/conf.d/20-xdebug.ini
 fi
