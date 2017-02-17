@@ -3,7 +3,7 @@
 # Install packages
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-apt-get install -y apache2 postgresql-9.4 postgresql-client-9.4 php5 php5-pgsql php5-gd php5-mcrypt php5-curl vim curl git postfix
+apt-get install -y apache2 postgresql-9.4 postgresql-client-9.4 php5 php5-pgsql php5-gd php5-mcrypt php5-curl vim curl git postfix php5-intl
 a2enmod rewrite
 cp /usr/share/postfix/main.cf.debian /etc/postfix/main.cf
 service postfix reload

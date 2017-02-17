@@ -3,7 +3,7 @@
 # Install packages
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-apt-get install -y apache2 mysql-server php5 php5-gd php5-mcrypt php5-mysql php5-ldap php5-curl vim curl git postfix php5-dev
+apt-get install -y apache2 mysql-server php5 php5-gd php5-mcrypt php5-mysql php5-ldap php5-curl vim curl git postfix php5-dev php5-intl
 a2enmod rewrite
 cp /usr/share/postfix/main.cf.debian /etc/postfix/main.cf
 service postfix reload
