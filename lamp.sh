@@ -1,9 +1,66 @@
-#/usr/bin/env bash
+#!/bin/bash
 
-# Install packages
+set -ex
+
 export DEBIAN_FRONTEND=noninteractive
-apt-get update
-apt-get install -y apache2 mysql-server php5 php5-gd php5-mcrypt php5-mysql php5-ldap php5-curl vim curl git postfix php5-dev php5-intl
+
+apt-get -q update
+apt-get install -y apt-transport-https lsb-release software-properties-common
+
+# gives "wheezy" or "jessie" or whatever this debian release's codename is
+DEBIAN_CODENAME="$(lsb_release -cs)";
+
+apt-get autoclean
+
+# add deb.sury for PHP backports
+apt-get -y install wget apt-transport-https lsb-release ca-certificates
+wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+echo "deb https://packages.sury.org/php/ ${DEBIAN_CODENAME} main" >> /etc/apt/sources.list.d/php.list
+echo "deb-src https://packages.sury.org/php/ ${DEBIAN_CODENAME} main" >> /etc/apt/sources.list.d/php.list
+
+# update again, as we installed the new backports source
+apt-get -q update
+# install required packages
+apt-get install -y unattended-upgrades build-essential less vim curl sysstat htop ntp \
+	lsof telnet wget git \
+	ssl-cert ca-certificates \
+	python python-pip python-yaml \
+	ruby ruby-dev \
+	swaks libsasl2-modules postfix mailutils \
+	mysql-server libgeo-ipfree-perl \
+	realpath logtail \
+	nfs-common
+
+php_versions=("7.1")
+php_extensions=(
+	"apcu"
+	"bcmath"
+	"bz2"
+	"common"
+	"cli"
+	"curl"
+	"dba"
+	"dev"
+	"gd"
+	"imagick"
+	"intl"
+	"ldap"
+	"mbstring"
+	"mcrypt"
+	"mysql"
+	"opcache"
+	"soap"
+	"sqlite3"
+	"tidy"
+	"xmlrpc"
+	"xsl"
+	"zip"
+)
+
+for version in ${php_versions[@]}; do
+	apt-get -y install "php$version" "libapache2-mod-php$version" "${php_extensions[@]/#/php$version-}"
+done
+
 a2enmod rewrite
 cp /usr/share/postfix/main.cf.debian /etc/postfix/main.cf
 service postfix reload
@@ -39,12 +96,15 @@ fi
 PATH=$PATH:~/.composer/vendor/bin
 
 # Set up Xdebug
-pecl install Xdebug
+XDEBUG_INSTALLED=`pecl list | grep xdebug | wc -l`
 
-if [ ! -f /etc/php5/apache2/conf.d/20-xdebug.ini ]
-then
+if [ $XDEBUG_INSTALLED -lt 1 ]; then
+    pecl install Xdebug
+fi
+
+if [ ! -f /etc/php/7.1/apache2/conf.d/20-xdebug.ini ]; then
     echo "[xdebug]
-    zend_extension=\"/usr/lib/php5/20131226/xdebug.so\"
+    zend_extension=\"/usr/lib/php/7.1/20131226/xdebug.so\"
     xdebug.profiler_enable = 1
     xdebug.profiler_enable_trigger = 1
     xdebug.profiler_append = 1
@@ -52,5 +112,5 @@ then
     xdebug.profiler_output_name=\"%H_%R_%p_cachegrind.out\"
     xdebug.remote_connect_back = 1
     xdebug.remote_enable = 1
-    xdebug.remote_port = 2200" > /etc/php5/apache2/conf.d/20-xdebug.ini
+    xdebug.remote_port = 2200" > /etc/php/7.1/apache2/conf.d/20-xdebug.ini
 fi
